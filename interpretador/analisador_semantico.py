@@ -8,7 +8,13 @@ class AnalisadorSemantico:
             if no[0] == 'atribuir':
                 nome_variavel = no[1]
                 expr = no[2]
-                # Armazena o nome da variável na tabela de símbolos
                 self.tabela_de_simbolos[nome_variavel] = expr
+            elif no[0] == 'for':
+                nome_variavel = no[1]
+                inicio = no[2]
+                fim = no[3]
+                # Lógica para tratar o laço 'for' (se necessário)
+                # Aqui podemos fazer verificações como garantir que as variáveis de controle estão corretas
+                self.tabela_de_simbolos[nome_variavel] = (inicio, fim)  # Exemplo de como armazenar a info do laço
             else:
                 raise ValueError(f"Tipo de declaração desconhecida: {no}")

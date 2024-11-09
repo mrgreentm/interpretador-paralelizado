@@ -44,10 +44,13 @@ def executar_cliente_calculadora(operacao, valor1, valor2):
 
 if __name__ == "__main__":
     codigo_fonte = """
-    x = 5;
-    y = 10;
-    z = x + y;
-    w = z + 3;
+        x = 0
+        y = 1
+        for i in 1 to 10 {
+            z = x
+            x = y
+            y = z + y
+        }
     """
 
     if len(sys.argv) > 1:
