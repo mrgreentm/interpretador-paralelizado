@@ -9,7 +9,8 @@ from interpretador.tabela_simbolos import TabelaDeSimbolos
 from port.channel import Channel
 from port.server_calculadora import ServidorCalculadora
 
-def executar_interpretador(codigo_fonte):
+def executar_interpretador(codigo_fonte, range):
+    codigo_fonte = codigo_fonte.replace("MAX", str(range))
     print("Executando Analisador Léxico...")
     analisador_lexico = AnalisadorLexico(codigo_fonte)
     tokens = analisador_lexico.analisar()
@@ -46,16 +47,17 @@ if __name__ == "__main__":
     codigo_fonte = """
         x = 0
         y = 1
-        for i in 1 to 10 {
+        for i in 1 to MAX {
             z = x
             x = y
             y = z + y
+            print(y)
         }
     """
 
     if len(sys.argv) > 1:
         if sys.argv[1] == "interpretador":
-            executar_interpretador(codigo_fonte)
+            executar_interpretador(codigo_fonte, sys.argv[2])
         elif sys.argv[1] == "servidor":
             iniciar_servidor_calculadora()
         elif sys.argv[1] == "cliente":

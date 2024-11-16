@@ -16,5 +16,8 @@ class AnalisadorSemantico:
                 # Lógica para tratar o laço 'for' (se necessário)
                 # Aqui podemos fazer verificações como garantir que as variáveis de controle estão corretas
                 self.tabela_de_simbolos[nome_variavel] = (inicio, fim)  # Exemplo de como armazenar a info do laço
+            elif no[0] == 'print':
+                expr = no[1]
+
             else:
                 raise ValueError(f"Tipo de declaração desconhecida: {no}")

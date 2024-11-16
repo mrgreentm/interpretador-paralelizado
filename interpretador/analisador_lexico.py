@@ -22,6 +22,7 @@ class AnalisadorLexico:
             ('COLCHETE_ESQ', r'\['),              # Colchete esquerdo para listas
             ('COLCHETE_DIR', r'\]'),              # Colchete direito para listas
             ('VIRGULA', r','),                    # Vírgula
+            ('COMENTARIO', r'#.*'),               # Comentários
             ('ESPACO', r'[ \t]+'),                # Espaços e tabulações
             ('NOVA_LINHA', r'\n'),                # Nova linha
             ('ERRO', r'.'),                       # Caracteres inválidos
@@ -30,19 +31,21 @@ class AnalisadorLexico:
         # Compilação da expressão regular para melhorar o desempenho
         padrao_regex = '|'.join(f'(?P<{pair[0]}>{pair[1]})' for pair in especificacao_tokens)
         
+        # Palavras-chave específicas
+        palavras_chave = {'if', 'else', 'for', 'while', 'def', 'return', 'in', 'to', 'print'}
+
         # Iteração sobre o código fonte usando finditer para reconhecer cada token
         for mo in re.finditer(padrao_regex, self.codigo_fonte):
             tipo = mo.lastgroup
             valor = mo.group()
             if tipo == 'NUMERO':
                 valor = int(valor)
-            elif tipo == 'ESPACO' or tipo == 'NOVA_LINHA':
+            elif tipo == 'ESPACO' or tipo == 'NOVA_LINHA' or tipo == 'COMENTARIO':
                 continue
-            # Tratando palavras-chave como tokens separados
-            elif tipo == 'ID' and valor in {'if', 'else', 'for', 'while', 'def', 'return', 'in', 'to'}:
-                tipo = valor.upper()  # Converte para maiúsculas
+            elif tipo == 'ID' and valor in palavras_chave:
+                tipo = valor.upper()  # Converte palavras-chave para tokens específicos
             elif tipo == 'ERRO':
-                raise RuntimeError(f'Caractere inesperado {valor}')
+                raise RuntimeError(f'Caractere inesperado: {valor} na posição {mo.start()}')
             self.tokens.append((tipo, valor))
 
         return self.tokens

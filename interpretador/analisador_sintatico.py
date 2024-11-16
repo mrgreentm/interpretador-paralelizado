@@ -29,10 +29,24 @@ class AnalisadorSintatico:
             return self.definicao_funcao()
         elif token_tipo == 'RETURN':  # Instrução de retorno
             return self.instrucao_return()
+        elif token_tipo == 'PRINT':  # Instrução de impressão
+            return self.instrucao_print()
         else:
             # Se o token não corresponder a nenhum dos casos acima, retornamos uma mensagem de erro
             raise SyntaxError(f"Instrução inválida: {token_valor}")
 
+    def instrucao_print(self):
+        self.pos += 1  # Avança o token 'PRINT'
+        if self.tokens[self.pos][0] == 'PARENTESES_ESQ':
+            self.pos += 1  # Consome o '('
+            expr = self.expressao()  # Avalia a expressão dentro de 'print'
+            if self.tokens[self.pos][0] == 'PARENTESES_DIR':
+                self.pos += 1  # Consome o ')'
+                return ('print', expr)
+            else:
+                raise SyntaxError("Esperado ')' após expressão em 'print'")
+        else:
+            raise SyntaxError("Esperado '(' após 'print'")
 
     def atribuicao_ou_chamada(self):
         nome_variavel = self.tokens[self.pos][1]
