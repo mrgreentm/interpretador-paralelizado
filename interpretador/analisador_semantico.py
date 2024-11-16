@@ -13,9 +13,7 @@ class AnalisadorSemantico:
                 nome_variavel = no[1]
                 inicio = no[2]
                 fim = no[3]
-                # Lógica para tratar o laço 'for' (se necessário)
-                # Aqui podemos fazer verificações como garantir que as variáveis de controle estão corretas
-                self.tabela_de_simbolos[nome_variavel] = (inicio, fim)  # Exemplo de como armazenar a info do laço
+                self.tabela_de_simbolos[nome_variavel] = (inicio, fim)
             elif no[0] == 'print':
                 expr = no[1]
 

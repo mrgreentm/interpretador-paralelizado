@@ -54,6 +54,13 @@ if __name__ == "__main__":
             print(y)
         }
     """
+    # codigo_fonte = """
+    #     y = 1
+    #     x = 12
+    #     z = x
+    #     x = y
+    #     y = z + y
+    # """
 
     if len(sys.argv) > 1:
         if sys.argv[1] == "interpretador":
