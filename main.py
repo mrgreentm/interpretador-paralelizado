@@ -47,20 +47,27 @@ if __name__ == "__main__":
     codigo_fonte = """
         x = 0
         y = 1
-        for i in 1 to MAX {
+        for i in 1 to MAX + 1 {
             z = x
             x = y
             y = z + y
             print(y)
         }
     """
-    # codigo_fonte = """
-    #     y = 1
-    #     x = 12
-    #     z = x
-    #     x = y
-    #     y = z + y
-    # """
+#     codigo_fonte = """
+#         y = 1
+#         x = 12
+#         z = x
+#         x = y
+#         y = z + y
+#     """
+#     codigo_fonte = """
+#     x = 1
+#     for i in 1 to MAX + 1 {
+#         x = x * i
+#         print(x)
+#     }
+# """
 
     if len(sys.argv) > 1:
         if sys.argv[1] == "interpretador":

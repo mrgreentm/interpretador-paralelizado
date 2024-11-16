@@ -1,25 +1,29 @@
 import socket
 
 class Channel:
-    def __init__(self, nome, host='localhost', port=12345):
+    def __init__(self, nome, port=12345):
         self.nome = nome
-        self.host = host
         self.port = port
-
-    def enviar(self, mensagem):
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            sock.connect((self.host, self.port))
-            sock.sendall(mensagem.encode('utf-8'))
-            resposta = sock.recv(1024).decode('utf-8')
-            return resposta
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server_socket.bind(('localhost', self.port))
+        self.server_socket.listen(5)
+        print(f"Canal {nome} iniciado na porta {self.port}")
 
     def receber(self):
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            sock.bind((self.host, self.port))
-            sock.listen()
-            print(f"Servidor {self.nome} aguardando conexões em {self.host}:{self.port}...")
-            conn, addr = sock.accept()
-            with conn:
-                print(f"Conectado por {addr}")
-                dados = conn.recv(1024).decode('utf-8')
-                return dados, conn
+        conn, addr = self.server_socket.accept()
+        try:
+            dados = conn.recv(1024).decode('utf-8')
+            if not dados:
+                raise ConnectionResetError("Conexão fechada pelo cliente.")
+            return dados, conn
+        except Exception as e:
+            print(f"Erro ao receber dados: {e}")
+            conn.close()
+            raise
+
+    def enviar(self, mensagem):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect(('localhost', self.port))
+            s.sendall(mensagem.encode('utf-8'))
+            resposta = s.recv(1024).decode('utf-8')
+            return resposta
