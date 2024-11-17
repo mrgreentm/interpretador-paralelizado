@@ -111,11 +111,13 @@ if __name__ == "__main__":
         elif sys.argv[1] == "cliente_simultaneo":
             if len(sys.argv) == 3:
                 maximo = int(sys.argv[2])
-                executar_simultaneamente(maximo)
+                executar_simultaneamente(maximo+1)
             else:
                 print("Uso: python main.py cliente_simultaneo <maximo>")
 
         elif sys.argv[1] == "cliente":
+            print("Uso: monte seu proprio codigo fonte, usando operacoes aritmeticas  +, - , *, /")
+
             cliente_enviar_codigo()
 
         else:
