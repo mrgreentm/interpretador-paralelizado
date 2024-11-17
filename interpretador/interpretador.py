@@ -11,6 +11,9 @@ class Interpretador:
                 nome_variavel = no[1]
                 expr = self.avaliar(no[2])
                 self.tabela_de_simbolos.adicionar_simbolo(nome_variavel, expr)
+                if(not possui_instrucoes_print(self.arvore_sintatica)):
+                    print(f"{nome_variavel} = {expr}")
+
             elif no[0] == 'if':
                 condicao = self.avaliar(no[1])
                 if condicao:
@@ -27,6 +30,9 @@ class Interpretador:
                 for i in range(inicio, fim):
                     self.tabela_de_simbolos.adicionar_simbolo(variavel, i)
                     self.executar_bloco(no[4])
+                if(not possui_instrucoes_print(self.arvore_sintatica)):
+                    print(f"{nome_variavel} = {expr}")
+
             elif no[0] == 'def_funcao':
                 nome_funcao = no[1]
                 parametros = no[2]
@@ -112,3 +118,9 @@ class Interpretador:
 
         # Remove o contexto da função após a execução
         self.tabela_de_simbolos.remover_contexto()
+
+def possui_instrucoes_print(arvore_sintatica):
+    for instrucao in arvore_sintatica:
+        if 'print' in str(instrucao):
+            return True
+    return False

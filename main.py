@@ -38,7 +38,6 @@ def processar_interpretador(dados):
         thread_name = threading.current_thread().name  # Nome da thread atual
         tipo, codigo_fonte, range_max = dados.split("|||")  # Extrai o tipo de cálculo
         codigo_fonte = codigo_fonte.replace("MAX", range_max)
-
         analisador_lexico = AnalisadorLexico(codigo_fonte)
         tokens = analisador_lexico.analisar()
 
@@ -93,6 +92,17 @@ def executar_simultaneamente(maximo):
     thread_fatorial.join()
     thread_fibonacci.join()
 
+def cliente_enviar_codigo():
+    codigo_fonte = input("Digite o código fonte para executar: ")
+    
+    tipo = "Cálculo Arbitrário"  # Tipo genérico, pode ser personalizado conforme necessário
+    
+    mensagem = f"{tipo}|||{codigo_fonte}|||100"
+    
+    # Envia para o servidor e recebe a resposta
+    resposta = enviar_para_servidor("Cliente Interpretador", 12346, mensagem)
+    print(f"Resultado da execução:\n{resposta}")
+
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
@@ -104,6 +114,10 @@ if __name__ == "__main__":
                 executar_simultaneamente(maximo)
             else:
                 print("Uso: python main.py cliente_simultaneo <maximo>")
+
+        elif sys.argv[1] == "cliente":
+            cliente_enviar_codigo()
+
         else:
             print("Opção inválida. Use 'servidor_interpretador' ou 'cliente_simultaneo'.")
     else:
