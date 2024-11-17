@@ -1,88 +1,110 @@
-from client.calculadora_client import ClienteCalculadora
+import threading
+import socket
+import sys
 from interpretador.analisador_lexico import AnalisadorLexico
 from interpretador.analisador_sintatico import AnalisadorSintatico
 from interpretador.analisador_semantico import AnalisadorSemantico
 from interpretador.interpretador import Interpretador
-import sys
-
 from interpretador.tabela_simbolos import TabelaDeSimbolos
-from port.channel import Channel
-from port.server_calculadora import ServidorCalculadora
 
-def executar_interpretador(codigo_fonte, range):
-    codigo_fonte = codigo_fonte.replace("MAX", str(range))
-    print("Executando Analisador Léxico...")
-    analisador_lexico = AnalisadorLexico(codigo_fonte)
-    tokens = analisador_lexico.analisar()
-    print("Tokens gerados:", tokens)
 
-    print("\nExecutando Analisador Sintático...")
-    analisador_sintatico = AnalisadorSintatico(tokens)
-    arvore_sintatica = analisador_sintatico.analisar()
-    print("Árvore Sintática:", arvore_sintatica)
+# Função para iniciar um servidor genérico
+def iniciar_servidor(nome, porta, processar_funcao):
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    server_socket.bind(('localhost', porta))
+    server_socket.listen(5)
+    print(f"{nome} iniciado na porta {porta}")
 
-    print("\nExecutando Analisador Semântico...")
-    tabela_de_simbolos = TabelaDeSimbolos()
-    analisador_semantico = AnalisadorSemantico(arvore_sintatica)
-    analisador_semantico.analisar()
+    def tratar_conexao(conn, addr):
+        print(f"Conexão recebida de {addr}")
+        try:
+            dados = conn.recv(4096).decode('utf-8')
+            resposta = processar_funcao(dados)
+            conn.sendall(resposta.encode('utf-8'))
+        except Exception as e:
+            print(f"Erro ao processar: {e}")
+            conn.sendall(f"Erro: {e}".encode('utf-8'))
+        finally:
+            conn.close()
 
-    print("\nExecutando Interpretador...")
-    interpretador = Interpretador(arvore_sintatica, tabela_de_simbolos)
-    interpretador.executar()
+    while True:
+        conn, addr = server_socket.accept()
+        thread = threading.Thread(target=tratar_conexao, args=(conn, addr), name=f"Thread-{addr}")
+        thread.start()
 
-def iniciar_servidor_calculadora():
-    print("Iniciando Servidor de Calculadora...")
-    canal_servidor = Channel("CalculadoraServidor", port=12345)
-    servidor = ServidorCalculadora(canal_servidor)
-    servidor.executar()
+def processar_interpretador(dados):
+    try:
+        thread_name = threading.current_thread().name  # Nome da thread atual
+        tipo, codigo_fonte, range_max = dados.split("|||")  # Extrai o tipo de cálculo
+        codigo_fonte = codigo_fonte.replace("MAX", range_max)
 
-def executar_cliente_calculadora(operacao, valor1, valor2):
-    print(f"Enviando operação: {operacao} {valor1} {valor2}")
-    canal_cliente = Channel("CalculadoraCliente", port=12345)
-    cliente = ClienteCalculadora(canal_cliente)
-    resultado = cliente.enviar_operacao(operacao, valor1, valor2)
-    print(f"Resultado recebido: {resultado}")
+        analisador_lexico = AnalisadorLexico(codigo_fonte)
+        tokens = analisador_lexico.analisar()
+
+        analisador_sintatico = AnalisadorSintatico(tokens)
+        arvore_sintatica = analisador_sintatico.analisar()
+
+        tabela_de_simbolos = TabelaDeSimbolos()
+        analisador_semantico = AnalisadorSemantico(arvore_sintatica)
+        analisador_semantico.analisar()
+
+        interpretador = Interpretador(arvore_sintatica, tabela_de_simbolos)
+        interpretador.executar()
+
+        for resultado in interpretador.resultados:
+            print(f"{resultado} - {tipo} - {thread_name}")
+
+        return f"Tokens: {tokens}\nÁrvore Sintática: {arvore_sintatica}\nExecução concluída."
+    except Exception as e:
+        return f"Erro no interpretador: {e}"
+
+
+# Função para enviar dados para um servidor
+def enviar_para_servidor(nome, porta, mensagem):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.connect(('localhost', porta))
+        s.sendall(mensagem.encode('utf-8'))
+        resposta = s.recv(4096).decode('utf-8')
+        return resposta
+
+
+def executar_fatorial(maximo):
+    codigo_fonte = "x = 1 for i in 1 to MAX { x = x * i print(x) }"
+    mensagem = f"Fatorial|||{codigo_fonte}|||{maximo}"
+    resposta = enviar_para_servidor("Cliente Interpretador", 12346, mensagem)
+    print(f"Fatorial:\n{resposta}")
+
+
+def executar_fibonacci(maximo):
+    codigo_fonte = "x = 0 y = 1 for i in 1 to MAX { z = x x = y y = z + y print(y) }"
+    mensagem = f"Fibonacci|||{codigo_fonte}|||{maximo}"
+    resposta = enviar_para_servidor("Cliente Interpretador", 12346, mensagem)
+    print(f"Fibonacci:\n{resposta}")
+
+
+def executar_simultaneamente(maximo):
+    thread_fatorial = threading.Thread(target=executar_fatorial, args=(maximo,), name="Thread-Fatorial")
+    thread_fibonacci = threading.Thread(target=executar_fibonacci, args=(maximo,), name="Thread-Fibonacci")
+
+    thread_fatorial.start()
+    thread_fibonacci.start()
+
+    thread_fatorial.join()
+    thread_fibonacci.join()
+
 
 if __name__ == "__main__":
-    codigo_fonte = """
-        x = 0
-        y = 1
-        for i in 1 to MAX + 1 {
-            z = x
-            x = y
-            y = z + y
-            print(y)
-        }
-    """
-#     codigo_fonte = """
-#         y = 1
-#         x = 12
-#         z = x
-#         x = y
-#         y = z + y
-#     """
-#     codigo_fonte = """
-#     x = 1
-#     for i in 1 to MAX + 1 {
-#         x = x * i
-#         print(x)
-#     }
-# """
-
     if len(sys.argv) > 1:
-        if sys.argv[1] == "interpretador":
-            executar_interpretador(codigo_fonte, sys.argv[2])
-        elif sys.argv[1] == "servidor":
-            iniciar_servidor_calculadora()
-        elif sys.argv[1] == "cliente":
-            if len(sys.argv) == 5:
-                operacao = sys.argv[2]
-                valor1 = int(sys.argv[3])
-                valor2 = int(sys.argv[4])
-                executar_cliente_calculadora(operacao, valor1, valor2)
+        if sys.argv[1] == "servidor_interpretador":
+            iniciar_servidor("Servidor Interpretador", 12346, processar_interpretador)
+        elif sys.argv[1] == "cliente_simultaneo":
+            if len(sys.argv) == 3:
+                maximo = int(sys.argv[2])
+                executar_simultaneamente(maximo)
             else:
-                print("Uso: python main.py cliente <operacao> <valor1> <valor2>")
+                print("Uso: python main.py cliente_simultaneo <maximo>")
         else:
-            print("Opção inválida. Use 'interpretador', 'servidor' ou 'cliente'.")
+            print("Opção inválida. Use 'servidor_interpretador' ou 'cliente_simultaneo'.")
     else:
-        print("Uso: python main.py <interpretador|servidor|cliente>")
+        print("Uso: python main.py <servidor_interpretador|cliente_simultaneo>")

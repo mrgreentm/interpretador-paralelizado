@@ -3,6 +3,7 @@ class Interpretador:
         self.arvore_sintatica = arvore_sintatica
         self.tabela_de_simbolos = tabela_de_simbolos
         self.funcoes = {}
+        self.resultados = []  # Armazena resultados para evitar mistura de threads
 
     def executar(self):
         for no in self.arvore_sintatica:
@@ -10,9 +11,6 @@ class Interpretador:
                 nome_variavel = no[1]
                 expr = self.avaliar(no[2])
                 self.tabela_de_simbolos.adicionar_simbolo(nome_variavel, expr)
-                if(not possui_instrucoes_print(self.arvore_sintatica)):
-                    print(f"{nome_variavel} = {expr}")
-
             elif no[0] == 'if':
                 condicao = self.avaliar(no[1])
                 if condicao:
@@ -48,15 +46,13 @@ class Interpretador:
             nome_variavel = instrucao[1]
             expr = self.avaliar(instrucao[2])
             self.tabela_de_simbolos.adicionar_simbolo(nome_variavel, expr)
-            if(not possui_instrucoes_print(self.arvore_sintatica)):
-                print(f"{nome_variavel} = {expr}")
         elif instrucao[0] == 'chamada_funcao':
             nome_funcao = instrucao[1]
             argumentos = [self.avaliar(arg) for arg in instrucao[2]]
             self.executar_funcao(nome_funcao, argumentos)
         elif instrucao[0] == 'print':
             valor = self.avaliar(instrucao[1])
-            print(valor)
+            self.resultados.append(valor)  # Coleta o resultado para exibição posterior
 
     def avaliar(self, expr):
         if isinstance(expr, tuple):
@@ -116,9 +112,3 @@ class Interpretador:
 
         # Remove o contexto da função após a execução
         self.tabela_de_simbolos.remover_contexto()
-
-def possui_instrucoes_print(arvore_sintatica):
-    for instrucao in arvore_sintatica:
-        if 'print' in str(instrucao):
-            return True
-    return False
