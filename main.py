@@ -69,14 +69,18 @@ def enviar_para_servidor(nome, porta, mensagem):
 
 
 def executar_fatorial(maximo):
-    codigo_fonte = "x = 1 for i in 1 to MAX { x = x * i print(x) }"
+    with open('./input_fat.txt', 'r', encoding='utf-8') as arquivo:
+        conteudo = arquivo.read()
+    codigo_fonte = conteudo
     mensagem = f"Fatorial|||{codigo_fonte}|||{maximo}"
     resposta = enviar_para_servidor("Cliente Interpretador", 12346, mensagem)
     print(f"Fatorial:\n{resposta}")
 
 
 def executar_fibonacci(maximo):
-    codigo_fonte = "x = 0 y = 1 for i in 1 to MAX { z = x x = y y = z + y print(y) }"
+    with open('./input_fib.txt', 'r', encoding='utf-8') as arquivo:
+        conteudo = arquivo.read()
+    codigo_fonte = conteudo
     mensagem = f"Fibonacci|||{codigo_fonte}|||{maximo}"
     resposta = enviar_para_servidor("Cliente Interpretador", 12346, mensagem)
     print(f"Fibonacci:\n{resposta}")
@@ -93,7 +97,9 @@ def executar_simultaneamente(maximo):
     thread_fibonacci.join()
 
 def cliente_enviar_codigo():
-    codigo_fonte = input("Digite o código fonte para executar: ")
+    with open('./input_client.txt', 'r', encoding='utf-8') as arquivo:
+        conteudo = arquivo.read()
+    codigo_fonte = conteudo
     
     tipo = "Cálculo Arbitrário"  # Tipo genérico, pode ser personalizado conforme necessário
     

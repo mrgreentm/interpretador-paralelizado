@@ -1,0 +1,4 @@
+x = 1
+for i in 1 to MAX {
+     x = x * i print(x) 
+}
