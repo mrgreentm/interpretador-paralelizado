@@ -69,7 +69,7 @@ def enviar_para_servidor(nome, porta, mensagem):
 
 
 def executar_fatorial(maximo):
-    with open('./input_fat.txt', 'r', encoding='utf-8') as arquivo:
+    with open('./input_fat.minipar', 'r', encoding='utf-8') as arquivo:
         conteudo = arquivo.read()
     codigo_fonte = conteudo
     mensagem = f"Fatorial|||{codigo_fonte}|||{maximo}"
@@ -78,7 +78,7 @@ def executar_fatorial(maximo):
 
 
 def executar_fibonacci(maximo):
-    with open('./input_fib.txt', 'r', encoding='utf-8') as arquivo:
+    with open('./input_fib.minipar', 'r', encoding='utf-8') as arquivo:
         conteudo = arquivo.read()
     codigo_fonte = conteudo
     mensagem = f"Fibonacci|||{codigo_fonte}|||{maximo}"
@@ -97,7 +97,7 @@ def executar_simultaneamente(maximo):
     thread_fibonacci.join()
 
 def cliente_enviar_codigo():
-    with open('./input_client.txt', 'r', encoding='utf-8') as arquivo:
+    with open('./input_client.minipar', 'r', encoding='utf-8') as arquivo:
         conteudo = arquivo.read()
     codigo_fonte = conteudo
     
